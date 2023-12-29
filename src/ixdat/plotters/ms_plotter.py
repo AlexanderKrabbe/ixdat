@@ -31,6 +31,8 @@ class MSPlotter(MPLPlotter):
         logplot=True,
         logdata=False,
         legend=True,
+        normalised_to=None,
+        normalization_factor=1,
         **kwargs,
     ):
         """Plot m/z signal vs time (MID) data and return the axis.
@@ -112,6 +114,15 @@ class MSPlotter(MPLPlotter):
                     remove_background=remove_background,
                     include_endpoints=False,
                 )
+                if normalised_to:
+                    v_norm = measurement.grab_flux_for_t(
+                            mol = normalised_to,
+                            t=t,
+                            tspan_bg=tspan_bg,  # find a way for diff tspan backgrounds
+                            remove_background=remove_background,
+                            )
+                    v = v/v_norm
+
             else:
                 t, v = measurement.grab_signal(
                     v_or_v_name,
@@ -120,6 +131,15 @@ class MSPlotter(MPLPlotter):
                     remove_background=remove_background,
                     include_endpoints=False,
                 )
+                if normalised_to:
+                    v_norm = measurement.grab_for_t(
+                            item = normalised_to,
+                            t=t,
+                            tspan_bg=tspan_bg,  # find a way for diff tspan backgrounds
+                            remove_background=remove_background,
+                            )
+                    v = v/v_norm
+
             if logplot:
                 v[v < MIN_SIGNAL] = MIN_SIGNAL
             if logdata:
@@ -131,7 +151,7 @@ class MSPlotter(MPLPlotter):
             x_unit_factor, x_unit = self._get_x_unit_factor(x_unit, "s")
             ax.plot(
                 t * x_unit_factor,
-                v * unit_factor,
+                v * unit_factor * normalization_factor, 
                 color=color,
                 label=v_name,
                 **kwargs,
@@ -151,6 +171,8 @@ class MSPlotter(MPLPlotter):
                 logplot=logplot,
                 logdata=logdata,
                 legend=legend,
+                normalised_to=normalised_to,
+                normalization_factor=normalization_factor
                 **kwargs,
             )
             axes = [ax, specs_next_axis["ax"]]
@@ -183,6 +205,8 @@ class MSPlotter(MPLPlotter):
         logplot=True,
         logdata=False,
         legend=True,
+        normalised_to=None,
+        normalization_factor=1,
         **plot_kwargs,
     ):
         """Plot m/z signal (MID) data against a specified variable and return the axis.
@@ -259,6 +283,14 @@ class MSPlotter(MPLPlotter):
                     remove_background=remove_background,
                     include_endpoints=False,
                 )
+                if normalised_to:
+                    v_norm = measurement.grab_flux_for_t(
+                            mol = normalised_to,
+                            t=t_v,
+                            tspan_bg=tspan_bg,  # find a way for diff tspan backgrounds
+                            remove_background=remove_background,
+                            )
+                    v = v/v_norm
             else:
                 t_v, v = measurement.grab_signal(
                     v_name,
@@ -267,6 +299,14 @@ class MSPlotter(MPLPlotter):
                     remove_background=remove_background,
                     include_endpoints=False,
                 )
+                if normalised_to:
+                    v_norm = measurement.grab_for_t(
+                            item = normalised_to,
+                            t=t_v,
+                            tspan_bg=tspan_bg,  # find a way for diff tspan backgrounds
+                            remove_background=remove_background,
+                            )
+                    v = v/v_norm
             if logplot:
                 v[v < MIN_SIGNAL] = MIN_SIGNAL
             x_mass = np.interp(t_v, t, x)
@@ -288,7 +328,7 @@ class MSPlotter(MPLPlotter):
 
             ax.plot(
                 x_mass * x_unit_factor,
-                v * unit_factor,
+                v * unit_factor * normalization_factor,
                 **plot_kwargs_this_mass,
             )
 
@@ -310,6 +350,8 @@ class MSPlotter(MPLPlotter):
                 logplot=logplot,
                 legend=legend,
                 logdata=logdata,
+                normalised_to=normalised_to,
+                normalization_factor=normalization_factor,
                 **plot_kwargs,
             )
             axes = [ax, specs_next_axis["ax"]]

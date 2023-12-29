@@ -127,7 +127,8 @@ class CinfdataDBReader:
         ) as cinf_db:
 
             self.group_data = cinf_db.get_data_group(
-                self.token, scaling_factors=(SCALE_TIME_TO_SECONDS, None)
+                self.token,
+                scaling_factors=(SCALE_TIME_TO_SECONDS, None)
             )
 
             self.group_meta = cinf_db.get_metadata_group(self.token)
@@ -151,10 +152,12 @@ class CinfdataDBReader:
             column_name = meta["mass_label"]
             if self.verbose:
                 print("Col name: ", column_name)
-
-            tcol = self.group_data[key][:, 0]
-            vcol = self.group_data[key][:, 1]
-
+                print("data: ", self.group_data[key])
+            try:
+                tcol = self.group_data[key][:, 0]
+                vcol = self.group_data[key][:, 1]
+            except IndexError:
+                continue
             tseries = TimeSeries(
                 name=column_name + "-x",
                 unit_name=get_column_unit(column_name + "-x") or "s",

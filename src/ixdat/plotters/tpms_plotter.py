@@ -40,6 +40,8 @@ class TPMSPlotter(MPLPlotter):
         logdata=None,
         legend=True,
         emphasis="top",
+        normalised_to=None,
+        normalization_factor=1,
         **kwargs,
     ):
         """Make a two panel plot with mass spec data on top panel and meta data on bottom
@@ -138,6 +140,8 @@ class TPMSPlotter(MPLPlotter):
                 logplot=logplot,
                 logdata=logdata,
                 legend=legend,
+                normalised_to=normalised_to,
+                normalization_factor=normalization_factor,
                 **kwargs,
             )
 
@@ -219,6 +223,8 @@ class TPMSPlotter(MPLPlotter):
         logplot=True,
         logdata=None,
         legend=True,
+        normalised_to=None,
+        normalization_factor=1,
         **kwargs,
     ):
         """Make an arrhenius like plot with quantified mass spec data on left y-axis.
@@ -370,9 +376,11 @@ class TPMSPlotter(MPLPlotter):
                 logplot=logplot,
                 logdata=logdata,
                 legend=legend,
+                normalised_to=normalised_to,
+                normalization_factor=normalization_factor,
                 **kwargs,
             )
-            if fit_arrhenius:
+            if fit_arrhenius and not normalised_to:
                 t, T = measurement.grab(
                     inverse_T_name, tspan=tspan, include_endpoints=True
                 )
@@ -381,7 +389,10 @@ class TPMSPlotter(MPLPlotter):
                         mol_list[0],
                         tspan=tspan,
                         include_endpoints=False,
+                        tspan_bg=tspan_bg,
+                        remove_background=remove_background,
                     )
+
                 elif mass_list:
                     t_v, V = measurement.grab(
                         mass_list[0],
@@ -394,7 +405,7 @@ class TPMSPlotter(MPLPlotter):
                 coef = measurement.fit_to_arrhenius_equation(
                     inverse_T=T_mol,
                     k=np.log(V),
-                    logdata=True,
+                    logdata=logdata,#True,
                 )
                 k_fitted = coef[1] + coef[0] * T_mol
                 logplot = logplot
@@ -414,6 +425,7 @@ class TPMSPlotter(MPLPlotter):
                     color=fit_arrhenius_color,
                     label="arrhenius",
                     linestyle="--",
+                    linewidth=0.5,
                 )
             if logplot:
                 ax.set_yscale("log")
@@ -1106,6 +1118,7 @@ MIN_SIGNAL = 1e-14  # So that the bottom half of the plot isn't wasted on log(no
 
 STANDARD_COLORS = {
     # Inset of meta channels #
+    "temperature": "#000075",  # "#808000",
     "TC temperature": "#000075",  # "#808000",
     "RTD temperature": "#4363d8",
     "Reactor pressure": "#808000",

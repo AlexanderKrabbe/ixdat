@@ -176,7 +176,7 @@ class ReactorMeasurement(MSMeasurement):
         popt, pcov = curve_fit(self._func, inverse_T, k)
         print(
             f"pre factor A = {popt[0]}, Ea/R = {popt[1]}, Ea = {popt[1]*R} [J/K mol]"
-            f"activity energy Ea/kB = {popt[1]} => Ea [eV K-1] = {-kB * popt[1]}\n"
+            f"activity energy Ea/kB = {popt[1]} => Ea [eV K-1] = {kB * popt[1]}\n"
         )  # kB = 8.617e-5 eV
 
         return popt, pcov
@@ -271,7 +271,6 @@ class ReactorMeasurement(MSMeasurement):
             new_unit = original_unit
         return unit_factor, new_unit
 
-
 class SpectroReactorMeasurement(ReactorMeasurement, SpectroMSMeasurement):
     default_plotter = SpectroTPMSPlotter
 
@@ -301,10 +300,10 @@ class ReactorCalibration(Calibration):
             signal_series = measurement[meta]
             unit_name = measurement[meta].unit.name
             y = signal_series.data
-            y_inverse = 1 / y
+            y_inverse = 1 / y * 1000
             return ValueSeries(
                 name=key,
-                unit_name=f"1/{unit_name}",
+                unit_name=f"1/{unit_name}x1000",
                 data=y_inverse,
                 tseries=signal_series.tseries,
             )
@@ -318,5 +317,20 @@ class ReactorCalibration(Calibration):
                 name=key,
                 unit_name=f"ln({unit_name})",
                 data=log_y,
+                tseries=signal_series.tseries,
+            )
+
+        elif key.startswith("norm_") or key.startswith("normalised_"):
+            meta = key.split("_")[-1]
+            signal_series = measurement[meta]
+            unit_name = measurement[meta].unit.name
+            y = signal_series.data
+            yt = signal_series.tseries,
+            y_norm = measurement.grab_for_t(item = meta, t=yt)
+            normalised_data = y/y_norm
+            return ValueSeries(
+                name=key,
+                unit_name=f"ln({unit_name})",
+                data=normalised_data,
                 tseries=signal_series.tseries,
             )

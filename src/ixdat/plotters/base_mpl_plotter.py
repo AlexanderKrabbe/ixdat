@@ -26,7 +26,10 @@ class MPLPlotter:
 
         """
 
-        fig, ax = plt.subplots()
+#        fig, ax = plt.subplots()
+        fig_size=[4.58,2.84]
+        fig, ax = plt.subplots(constrained_layout=False, figsize=(fig_size[0],fig_size[1]), dpi=300)
+
         if xlabel:
             ax.set_xlabel(xlabel)
         if ylabel:

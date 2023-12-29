@@ -1,6 +1,6 @@
 """A reader for text exports from the RGA Software of Stanford Instruments"""
 
-from EC_MS import Dataset
+#from EC_MS import Dataset
 from .ec_ms_pkl import measurement_from_ec_ms_dataset
 from ..techniques import ECMeasurement
 
